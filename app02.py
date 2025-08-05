@@ -70,12 +70,8 @@ def extract_text_pdf(file_path):
     print("Saiu Extract")
     return content
 
-# Indexação e recuperação
 
-
-def config_retriever(folder_path="uploads"):
-    print("Entrou retriever")
-
+def config_index():
     # Caminho para o índice FAISS
     index_path = 'index_faiss'
 
@@ -90,7 +86,7 @@ def config_retriever(folder_path="uploads"):
         # Carregar o índice FAISS existente em vez de reprocessar
         vectorstore = FAISS.load_local(
             index_path, embeddings=embeddings, allow_dangerous_deserialization=True)
-        st.success("Índice FAISS carregado com sucesso!")
+        st.success("Índice carregado com sucesso!")
     else:
         # Carregar documentos
         docs_path = Path("uploads")
@@ -124,8 +120,21 @@ def config_retriever(folder_path="uploads"):
         print("aqui 3")
         # Armazenamento
         vectorstore.save_local(index_path)
-        st.success("Índice FAISS criado e salvo com sucesso!")
+        st.success("Índice criado e salvo com sucesso!")
         print("aqui 4")
+    return vectorstore
+
+
+if "vectorstore" not in st.session_state:
+    with st.spinner('Índice sendo carregado, por favor aguarde...'):
+        st.session_state.vectorstore = config_index()
+
+
+# Indexação e recuperação
+
+
+def config_retriever(folder_path="uploads", vectorstore=st.session_state.vectorstore):
+    print("Entrou retriever")
 
     # Configurando o recuperador de texto / Retriever
     retriever = vectorstore.as_retriever(
